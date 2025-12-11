@@ -113,7 +113,13 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server on 0.0.0.0 so it’s accessible externally
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server running on http://0.0.0.0:${PORT}`);
+// Automatically start bots on deployment
+const initialBotCount = Number(process.env.BOT_COUNT) || 5;
+startClients(initialBotCount);
+activeBots += initialBotCount;
+console.log(`Automatically started ${initialBotCount} bots on deployment.`);
+
+// ===== Start server =====
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
