@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Grabber Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { text-align: center; }
+    button { margin: 5px; padding: 10px 15px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f4f4f4; }
+    #orders { max-height: 200px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <h1>Order Grabber Dashboard</h1>
+
+  <div>
+    <button id="startBots">Start Bots</button>
+    <button id="stopBots">Stop Bots</button>
+  </div>
+
+  <div>
+    <h3>Bot Settings</h3>
+    <label>Min Price: <input type="number" id="minPrice" /></label>
+    <label>Target Region: 
+      <select id="targetRegion">
+        <option value="US">US</option>
+        <option value="UK">UK</option>
+        <option value="NG">NG</option>
+        <option value="KE">KE</option>
+      </select>
+    </label>
+    <button id="updateSettings">Update</button>
+  </div>
+
+  <div>
+    <h3>Stats</h3>
+    <p>Active Bots: <span id="activeBots">0</span></p>
+    <p>Total Grabbed Orders: <span id="totalGrabbed">0</span></p>
+  </div>
+
+  <div>
+    <h3>Grabbed Orders</h3>
+    <div id="orders">
+      <table>
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Price</th>
+            <th>Region</th>
+            <th>Bot ID</th>
+          </tr>
+        </thead>
+        <tbody id="ordersBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <h3>Per-Bot Stats</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Bot ID</th>
+          <th>Grabbed Orders</th>
+        </tr>
+      </thead>
+      <tbody id="botStatsBody"></tbody>
+    </table>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+
+    const activeBotsEl = document.getElementById("activeBots");
+    const totalGrabbedEl = document.getElementById("totalGrabbed");
+    const ordersBody = document.getElementById("ordersBody");
+    const botStatsBody = document.getElementById("botStatsBody");
+    const minPriceInput = document.getElementById("minPrice");
+    const targetRegionInput = document.getElementById("targetRegion");
+
+    // Buttons
+    document.getElementById("startBots").addEventListener("click", () => {
+      socket.emit("startBots");
+    });
+
+    document.getElementById("stopBots").addEventListener("click", () => {
+      socket.emit("stopBots");
+    });
+
+    document.getElementById("updateSettings").addEventListener("click", () => {
+      socket.emit("updateSettings", {
+        MIN_PRICE: Number(minPriceInput.value),
+        TARGET_REGION: targetRegionInput.value
+      });
+    });
+
+    // Update dashboard on server events
+    socket.on("botStats", ({ activeBots, totalGrabbed, perBot }) => {
+      activeBotsEl.textContent = activeBots;
+      totalGrabbedEl.textContent = totalGrabbed;
+
+      botStatsBody.innerHTML = "";
+      for (const botId in perBot) {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${botId}</td><td>${perBot[botId]}</td>`;
+        botStatsBody.appendChild(row);
+      }
+    });
+
+    socket.on("grabbed", (orders) => {
+      ordersBody.innerHTML = "";
+      orders.forEach(order => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${order.id}</td><td>${order.price}</td><td>${order.region}</td><td>${order.botId || '-'}</td>`;
+        ordersBody.appendChild(row);
+      });
+    });
+
+    socket.on("settingsUpdate", (settings) => {
+      minPriceInput.value = settings.MIN_PRICE;
+      targetRegionInput.value = settings.TARGET_REGION;
+    });
+  </script>
+</body>
+</html>
