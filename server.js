@@ -113,13 +113,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// Automatically start bots on deployment
-const initialBotCount = Number(process.env.BOT_COUNT) || 5;
-startClients(initialBotCount);
-activeBots += initialBotCount;
-console.log(`Automatically started ${initialBotCount} bots on deployment.`);
-
 // ===== Start server =====
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
