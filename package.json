@@ -1,17 +1,22 @@
 {
   "name": "order-grabber-mock",
   "version": "1.0.0",
+  "description": "Mock order grabbing bot with dashboard",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "server": "nodemon server.js",
-    "client": "node tools/spawn_many_clients.js"
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node server.js",
+    "client": "node tools/spawn_many_clients.js",
+    "dev": "concurrently \"nodemon server.js\" \"node tools/spawn_many_clients.js\""
   },
+  "author": "Davepellet",
+  "license": "MIT",
   "dependencies": {
+    "concurrently": "^8.2.0",
+    "dotenv": "^17.2.3",
     "express": "^4.18.2",
     "socket.io": "^4.7.2",
-    "ws": "^8.16.0",
-    "dotenv": "^17.2.3"
+    "ws": "^8.15.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
